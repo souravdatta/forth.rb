@@ -11,5 +11,5 @@ You need a working Ruby interpreter installed in the system. I am using Ruby 3.0
 `ruby run_forth.rb`
 
 #### Example
-
+![](https://github.com/souravdatta/forth.rb/blob/main/example.gif)
 
