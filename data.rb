@@ -41,4 +41,8 @@ class Stack
   def to_s
     '| ' + @stk.reverse.join(' | ') + ' >'
   end
+
+  def length
+    @stk.length
+  end
 end

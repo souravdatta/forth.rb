@@ -4,7 +4,7 @@ class Tokens
   end
 
   def self.symbol?(s)
-    s.to_s =~ /^[a-z\.\+\-\*\/][^\s]*$/
+    s.to_s =~ /^[0-9a-z\.\+\-\*\/][^\s]*$/
   end
 
   def self.string_open?(s)
