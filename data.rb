@@ -39,6 +39,6 @@ class Stack
   end
 
   def to_s
-    '| ' + @stk.reverse.join(' ') + ' >'
+    '| ' + @stk.reverse.join(' | ') + ' >'
   end
 end
