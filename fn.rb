@@ -6,6 +6,10 @@ class Fn
   def symbol
     raise 'Abstract method, please override in a child class'
   end
+
+  def definition
+    raise 'Abstract method, please override in a child class'
+  end
 end
 
 class Builtin < Fn
@@ -18,6 +22,10 @@ class Builtin < Fn
 
   def exec(stk)
     @proc.call(stk)
+  end
+
+  def definition
+    "Builtin method #{self.symbol}"
   end
 end
 
@@ -33,5 +41,9 @@ class UserDefined < Fn
   def exec(stk)
     interpreter = Interpreter.new(stack: stk, dict: @dict)
     interpreter.interpret(@body)
+  end
+
+  def definition
+    "#@body"
   end
 end
