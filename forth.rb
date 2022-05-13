@@ -1,144 +1,10 @@
 require './defaults.rb'
+require './scanner.rb'
+require './tokens.rb'
+require './data.rb'
+require './fn.rb'
+require './commands.rb'
 
-
-class Scanner
-  def initialize(line)
-    @line = line.chomp
-    @parts = @line.split(/\s+/)
-    @index = 0
-  end
-
-  def next
-    if @index >= @parts.length
-      return :eof
-    end
-
-    next_thing = @parts[@index]
-    @index += 1
-    next_thing
-  end
-
-  def has_more?
-    @index < @parts.length
-  end
-
-  def words
-    @parts.clone
-  end
-
-  def put_back(w)
-    @parts.unshift w
-  end
-end
-
-class Tokens
-  def self.integer?(s)
-    s.to_s =~ /^[0-9]+$/
-  end
-
-  def self.symbol?(s)
-    s.to_s =~ /^[a-z\.\+\-\*\/][^\s]*$/
-  end
-
-  def self.string_open?(s)
-    s.to_s == '."'
-  end
-
-  def self.string_close?(s)
-    s.to_s == '"'
-  end
-
-  def self.defword_open?(s)
-    s.to_s == ':'
-  end
-
-  def self.defword_close?(s)
-    s.to_s == ';'
-  end
-end
-
-class Dictionary
-  def initialize
-    @table = Hash.new
-  end
-
-  def add_word(fn)
-    @table[fn.symbol] = fn
-  end
-
-  def find_word(word)
-    @table[word]
-  end
-
-  def build_default_dictionary
-    DEFAULTS.each {|fn| self.add_word fn}
-  end
-end
-
-class Stack
-  def initialize
-    @stk = []
-  end
-
-  def push(x)
-    @stk.unshift x
-  end
-
-  def pop
-    if @stk.length == 0
-      raise 'empty stack'
-    end
-    @stk.shift
-  end
-
-  def swap
-    if @stk.length >= 2
-      @stk[-2], @stk[-1] = @stk[-1], @stk[2]
-    end
-  end
-
-  def to_s
-    @stk.reverse.join(' ')
-  end
-end
-
-class Fn
-  def exec(stk)
-    raise 'Abstract method, please override in a child class'
-  end
-
-  def symbol
-    raise 'Abstract method, please override in a child class'
-  end
-end
-
-class Builtin < Fn
-  attr_accessor :symbol
-
-  def initialize(sym, &block)
-    @symbol = sym
-    @proc = block
-  end
-
-  def exec(stk)
-    @proc.call(stk)
-  end
-end
-
-class UserDefined < Fn
-  attr_accessor :symbol
-
-  def initialize(sym, body, dict)
-    @symbol = sym
-    @body = body
-    @dict = dict
-  end
-
-  def exec(stk)
-    interpreter = Interpreter.new(stack: stk, dict: @dict)
-    interpreter.interpret(@body)
-  end
-end
 
 class Interpreter
   def initialize(stack: nil, dict: nil, outer_layer: false)
@@ -147,6 +13,7 @@ class Interpreter
     @dict = dict || Dictionary.new
     @dict.build_default_dictionary unless dict
     @outer_layer = outer_layer
+    @command_runner = CommandRunner.new(@stack, @dict)
   end
 
   def parse(line)
@@ -207,6 +74,14 @@ class Interpreter
     @dict.add_word(fn)
   end
 
+  def interpret_command
+    cmd = []
+    while @scanner.has_more?
+      cmd << @scanner.next
+    end
+    @command_runner.run cmd
+  end
+
   def interpret_token(token)
     if Tokens.integer? token
       @stack.push token
@@ -214,6 +89,9 @@ class Interpreter
       self.interpret_string
     elsif Tokens.defword_open? token
       self.interpret_defword
+    elsif Tokens.command? token
+      @scanner.put_back token
+      self.interpret_command
     elsif Tokens.symbol? token
       action = @dict.find_word(token)
       if action.nil?
@@ -244,3 +122,6 @@ class Interpreter
     end
   end
 end
+
+
+
