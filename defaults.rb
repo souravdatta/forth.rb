@@ -44,6 +44,55 @@ DEFAULTS = [
       stk.push(n1.to_i / n2.to_i)
     end,
 
+    Builtin.new('=') do |stk|
+      # (n1 n2 -- n1 == n2? true : false)
+      n2 = stk.pop.to_i
+      n1 = stk.pop.to_i
+      stk.push(n1 == n2)
+    end,
+
+    Builtin.new('<>') do |stk|
+      # (n1 n2 -- n1 <> n2? true : false)
+      n2 = stk.pop.to_i
+      n1 = stk.pop.to_i
+      stk.push(n1 != n2)
+    end,
+
+    Builtin.new('>') do |stk|
+      # (n1 n2 -- n1 > n2? true : false)
+      n2 = stk.pop.to_i
+      n1 = stk.pop.to_i
+      stk.push(n1 > n2)
+    end,
+
+    Builtin.new('>=') do |stk|
+      # (n1 n2 -- n1 >= n2? true : false)
+      n2 = stk.pop.to_i
+      n1 = stk.pop.to_i
+      stk.push(n1 >= n2)
+    end,
+
+    Builtin.new('<') do |stk|
+      # (n1 n2 -- n1 < n2? true : false)
+      n2 = stk.pop.to_i
+      n1 = stk.pop.to_i
+      stk.push(n1 < n2)
+    end,
+
+    Builtin.new('<=') do |stk|
+      # (n1 n2 -- n1 <= n2? true : false)
+      n2 = stk.pop.to_i
+      n1 = stk.pop.to_i
+      stk.push(n1 <= n2)
+    end,
+
+    Builtin.new('not') do |stk|
+      # (n1 n2 -- n1 > n2? true : false)
+      n2 = stk.pop.to_i
+      n1 = stk.pop.to_i
+      stk.push(n1 != n2)
+    end,
+
     Builtin.new('swap') do |stk|
       # (n1 n2 -- n2 n1)
       n2 = stk.pop

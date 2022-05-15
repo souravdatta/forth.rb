@@ -82,6 +82,37 @@ class Interpreter
     @command_runner.run cmd
   end
 
+  def interpret_if
+    cmd = []
+    if_part = []
+    else_part = []
+    while @scanner.has_more? do
+      w = @scanner.next
+      if not Tokens.if_close?(w)
+        cmd << w
+      else
+        break
+      end
+    end
+
+    fill_target = if_part
+    for x in cmd
+      if x == 'else'
+        fill_target = else_part
+        next
+      end
+      fill_target << x
+    end
+
+    cond = @stack.pop
+
+    if (cond == true) || (cond == 1)
+      UserDefined.new('__if_block', if_part.join(' '), @dict).exec(@stack)
+    else
+      UserDefined.new('__if_block', else_part.join(' '), @dict).exec(@stack)
+    end
+  end
+
   def interpret_token(token)
     if Tokens.integer? token
       @stack.push token
@@ -92,6 +123,8 @@ class Interpreter
     elsif Tokens.command? token
       @scanner.put_back token
       self.interpret_command
+    elsif Tokens.if_open? token
+      self.interpret_if
     elsif Tokens.symbol? token
       action = @dict.find_word(token)
       if action.nil?
